@@ -1,0 +1,126 @@
+<?php
+
+session_start();
+require_once("dbcontroller.php");
+$db_handle = new DBController();
+
+$errormsg="";
+
+if (isset($_POST['login'])) {
+	
+	$email=$_POST['email'];
+    $password=($_POST['password']);
+	
+	if (isset($_POST['remember'])) {	
+		session_set_cookie_params('604800'); //one week (value in seconds)
+		session_regenerate_id(true);
+	} 
+	
+	$query = mysql_query("SELECT * FROM jc_user where 
+	email = '$email' AND 
+	password ='$password'");
+
+	
+	$row = mysql_fetch_array($query);
+	$count = mysql_num_rows($query);	
+
+	if( $count == 1 && $row['password']==$password ){
+		$_SESSION['jc_id'] = $row['jc_id'];
+		$_SESSION['usr_name'] = $row['jc_nickname'];
+		header("Location: jc_dashboard.php");
+	} 
+	if($row) {
+			$_SESSION["jc_id"] = $row["jc_id"];
+			
+			if(!empty($_POST["remember"])) {
+				setcookie ("member_login",$_POST["email"],time()+ (10 * 365 * 24 * 60 * 60));
+				setcookie ("member_password",$_POST["password"],time()+ (10 * 365 * 24 * 60 * 60));
+			} else {
+				if(isset($_COOKIE["member_login"])) {
+					setcookie ("member_login","");
+				}
+				if(isset($_COOKIE["member_password"])) {
+					setcookie ("member_password","");
+				}
+			}
+	}
+	else {
+		$errormsg = "Incorrect Email or Password!!!";
+	}
+}
+?>
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Job Creator | Login</title>
+		<style type="text/css" media="all">
+body {
+background-image:url('bg_gray.png');}
+.form{border-radius: 10px 10px 10px 10px;}
+.row a{color: blue;
+	font-size: 12px; 
+	margin:0px 0px 10px 0;
+	line-height: 14px; 
+	font-family:Arial, Helvetica;}
+.row a:hover{color: blue;text-decoration:underline;}
+</style>
+<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7; IE=EmulateIE9">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no"/>
+		<link rel="stylesheet" type="text/css" href="css/style.css" media="all" />
+		<link rel="stylesheet" type="text/css" href="css/demo.css" media="all" />
+
+
+	</head>
+
+		<body>
+	
+			<div class="container">
+
+				<div class="freshdesignweb-top">
+				<a href="../index.php" style="margin-left:15px;">Home</a>
+					<span class="right">
+					<a href="jc_register.php">
+					<strong>Sign up</strong>
+					</a>
+					</span>
+					<div class="clr"></div>
+				</div>
+
+					<header>
+
+					 <h1>
+						<span>Mega Job Creator</span> 
+							Login					
+				     </h1>
+					 
+					</header>    
+
+								
+						<div  class="form">
+							<form role="form" action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post" name="loginform"> 
+								<div class="loginmessage"><?php if(isset($errormsg)) echo $errormsg; ?></div>
+								
+								<p class="contact"><label for="email">Email</label></p>
+								<input type="text" name="email" placeholder="example@domain.com" required="" tabindex="1" value="<?php if(isset($_COOKIE["member_login"])) { echo $_COOKIE["member_login"]; } ?>">
+			
+								<p class="contact"><label for="password">Password</label></p>
+								<input type="password" name="password" placeholder="password" required="" tabindex="1" value="<?php if(isset($_COOKIE["member_password"])) { echo $_COOKIE["member_password"]; } ?>">									
+								
+								<p class="contact">Remember me:
+								<input type="checkbox" checked="checked" name="remember" id="remember" <?php if(isset($_COOKIE["member_login"])) { ?> checked <?php } ?> /></p>
+								
+									
+								<p class="row" ><input class="buttom" name="login" id="" value="Login" type="submit" tabindex="5">
+																
+							   <a href="jc_forgot.php">Forgot Password?</a></p>
+									
+							</form> 
+								
+						</div>  
+				    
+			</div>
+
+		</body>
+</html>
